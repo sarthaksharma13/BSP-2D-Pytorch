@@ -21,7 +21,8 @@ To set up the environment run,
 - All the experiments would be saved in ``` \exp ``` folder.
 
 ## Results
-- Below images highlights the loss plots and the ground truth (on left) and output (on right) below.
+- (Top)images highlights the loss plots: shape loss(on left) and total loss (on right).
+- (Bottom) images highlights the reconstruction: ground truth (on left) and output (on right).
 ![Alt text](sample_img.png?raw=true "Title")
 ## References
 This implementation was referred from the original TensorFlow 2D code released by authors here [Project page](https://bsp-net.github.io)
