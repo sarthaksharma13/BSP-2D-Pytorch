@@ -25,6 +25,7 @@ parser.add_argument("--shape_batch_size", type=int, default=20, help="batch size
 parser.add_argument("--LR",type=float, default=0.00002, help="learning rate")
 parser.add_argument("--optimizer", type=str, default="adam", help="type of optimizer")
 parser.add_argument("--beta1", type=float, default=0.5, help="momentum term of adam")
+parser.add_argument("--use_bn",default=False,help=" use batch norm or not")
 
 parser.add_argument("--exp_dir", type=None, default="tmp", help="directory to save checkpoints, outputs etc")
 parser.add_argument("--model_path", type=str, default="", help="pre-trained model path")
@@ -71,7 +72,7 @@ dim = args.sample_vox_size #2D grid dimension, width=height
 point_batch_size = dim*dim #number of points
 
 # Get the model and initialize weights
-bsp_2d = BSP_Model(p_dim=256,ef_dim=32,gf_dim=64,phase=args.phase)
+bsp_2d = BSP_Model(p_dim=256,ef_dim=32,gf_dim=64,phase=args.phase, use_bn=args.use_bn)
 if  os.path.exists(args.model_path):
     print("loading pretrained weights !")
     bsp_2d.load_state_dict(torch.load(args.model_path))

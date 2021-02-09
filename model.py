@@ -6,36 +6,47 @@ from torch.autograd import Variable as V
 
 class encoder(nn.Module):
 
-    def __init__(self,ef_dim=32,p_dim=256):
+    def __init__(self,ef_dim=32,p_dim=256,use_bn=False):
         super(encoder,self).__init__()
         """
         Args:
             ef_dim: #channels in the filters
             p_dim: number of half space constraints/planes
+            use_bn: whether to BN layer
 
         Going to return the plane parameters 
         """
 
         self.ef_dim = ef_dim
         self.p_dim = p_dim
+        self.use_bn = use_bn
+
         self.conv1 = nn.Conv2d(1,self.ef_dim,4,2,1) #32x32x32
-        self.conv1_bn = nn.BatchNorm2d(self.ef_dim)
+        if self.use_bn:
+            self.conv1_bn = nn.BatchNorm2d(self.ef_dim)
         self.conv2 = nn.Conv2d(self.ef_dim,self.ef_dim*2,4,2,1) #64x16x16
-        self.conv2_bn = nn.BatchNorm2d(self.ef_dim*2)
+        if self.use_bn:
+            self.conv2_bn = nn.BatchNorm2d(self.ef_dim*2)
         self.conv3 = nn.Conv2d(self.ef_dim*2,self.ef_dim*4,4,2,1) #128x8x8
-        self.conv3_bn = nn.BatchNorm2d(self.ef_dim*4)
+        if self.use_bn:
+            self.conv3_bn = nn.BatchNorm2d(self.ef_dim*4)
         self.conv4 = nn.Conv2d(self.ef_dim*4,self.ef_dim*8,4,2,1) #256x4x4
-        self.conv4_bn = nn.BatchNorm2d(self.ef_dim*8)
+        if self.use_bn:
+            self.conv4_bn = nn.BatchNorm2d(self.ef_dim*8)
         self.conv5 = nn.Conv2d(self.ef_dim*8,self.ef_dim*8,4,1) #256x1x1
-        self.conv5_bn = nn.BatchNorm2d(self.ef_dim*8)
+        if self.use_bn:
+            self.conv5_bn = nn.BatchNorm2d(self.ef_dim*8)
         
 
         self.l1 = nn.Linear(self.ef_dim*8,self.ef_dim*16)
-        self.l1_bn = nn.BatchNorm1d(self.ef_dim*16) 
+        if self.use_bn:
+            self.l1_bn = nn.BatchNorm1d(self.ef_dim*16) 
         self.l2 = nn.Linear(self.ef_dim*16,self.ef_dim*32)
-        self.l2_bn = nn.BatchNorm1d(self.ef_dim*32)
+        if self.use_bn:
+            self.l2_bn = nn.BatchNorm1d(self.ef_dim*32)
         self.l3 = nn.Linear(self.ef_dim*32,self.ef_dim*64)
-        self.l3_bn = nn.BatchNorm1d(self.ef_dim*64)
+        if self.use_bn:
+            self.l3_bn = nn.BatchNorm1d(self.ef_dim*64)
 
         self.l_m = nn.Linear(self.ef_dim*64,self.p_dim*2)
         
@@ -50,37 +61,64 @@ class encoder(nn.Module):
             inp : NxWxHx1
         """
         conv1 = self.conv1(inp)
-        conv1_bn = self.conv1_bn(conv1)
-        conv1_lr = F.leaky_relu(conv1_bn)
+        if self.use_bn:
+            conv1_bn = self.conv1_bn(conv1)
+            conv1_lr = F.leaky_relu(conv1_bn)
+        else:
+            conv1_lr = F.leaky_relu(conv1)
+        
 
         conv2 = self.conv2(conv1_lr)
-        conv2_bn = self.conv2_bn(conv2)
-        conv2_lr = F.leaky_relu(conv2_bn)
+        if self.use_bn:
+            conv2_bn = self.conv2_bn(conv2)
+            conv2_lr = F.leaky_relu(conv2_bn)
+        else:
+            conv2_lr = F.leaky_relu(conv2)
 
         conv3 = self.conv3(conv2_lr)
-        conv3_bn = self.conv3_bn(conv3)
-        conv3_lr = F.leaky_relu(conv3_bn)
+        if self.use_bn:
+            conv3_bn = self.conv3_bn(conv3)
+            conv3_lr = F.leaky_relu(conv3_bn)
+        else:
+            conv3_lr = F.leaky_relu(conv3)
 
         conv4 = self.conv4(conv3_lr)
-        conv4_bn = self.conv4_bn(conv4)
-        conv4_lr = F.leaky_relu(conv4_bn)
+        if self.use_bn:
+            conv4_bn = self.conv4_bn(conv4)
+            conv4_lr = F.leaky_relu(conv4_bn)
+        else:
+            conv4_lr = F.leaky_relu(conv4)
 
         conv5 = self.conv5(conv4_lr)
-        conv5_bn = self.conv5_bn(conv5)
-        conv5_lr = F.leaky_relu(conv5_bn)
+        if self.use_bn:
+            conv5_bn = self.conv5_bn(conv5)
+            conv5_lr = F.leaky_relu(conv5_bn)
+        else:
+            conv5_lr = F.leaky_relu(conv5)
 
 
         conv5_lr = conv5_lr.view(-1,self.ef_dim*8) #256x1
 
         l1 = self.l1(conv5_lr)
-        l1_bn = self.l1_bn(l1)
-        l1_lr=F.leaky_relu(l1_bn) #512 
+        if self.use_bn:
+            l1_bn = self.l1_bn(l1)
+            l1_lr=F.leaky_relu(l1_bn) #512
+        else:
+            l1_lr = F.leaky_relu(l1) 
+        
         l2 = self.l2(l1_lr)
-        l2_bn = self.l2_bn(l2)
-        l2_lr = F.leaky_relu(l2_bn) #1024
+        if self.use_bn:
+            l2_bn = self.l2_bn(l2)
+            l2_lr = F.leaky_relu(l2_bn) #1024
+        else:
+            l2_lr = F.leaky_relu(l2)
+        
         l3 = self.l3(l2_lr)
-        l3_bn = self.l3_bn(l3)
-        l3_lr = F.leaky_relu(l3) #2048
+        if self.use_bn:
+            l3_bn = self.l3_bn(l3)
+            l3_lr = F.leaky_relu(l3) #2048
+        else:
+            l3_lr = F.leaky_relu(l3)
 
         l_m = self.l_m(l3_lr) #512, (256 planes)
         l_b = self.l_b(l3_lr) #256, (256 planes)
@@ -163,21 +201,23 @@ class generator(nn.Module):
 
 class BSP_Model(nn.Module):
 
-    def __init__(self,p_dim=256,ef_dim=32,gf_dim=64,phase=1):
+    def __init__(self,p_dim=256,ef_dim=32,gf_dim=64,phase=1,use_bn=False):
         super(BSP_Model,self).__init__()
         """
         Args:
             p_dim: number of half space constraints/plane
             ef_dim: #channels in the filters
             gf_dim: number of convexes
+            use_bn: add BN layer or not
         """
 
         self.p_dim = p_dim
         self.ef_dim = ef_dim
         self.gf_dim = gf_dim
         self.phase = phase
+        self.use_bn = use_bn#binary
 
-        self.encoder = encoder(self.ef_dim,self.p_dim)
+        self.encoder = encoder(self.ef_dim,self.p_dim,self.use_bn)
         self.generator = generator(self.p_dim,self.gf_dim,self.phase)
  
     def forward(self, inp, coords,mode="train"):
