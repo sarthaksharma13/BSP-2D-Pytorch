@@ -16,12 +16,13 @@ To set up the environment run,
 `conda create --name <env> --file requirements.txt`
 
 ## Usage
-- First generate the data by running the script ```python create_dataset.py``` in /data folder.
+- First generate the data by running the script ```python create_dataset.py``` in ``` /data ``` folder.
 - Run ``` sh train.sh ``` to start training, by specifying different arguments.
-- All the experiments would be saved in \exp folder.
+- All the experiments would be saved in ``` \exp ``` folder.
 
 ## Results
-
+- Below images highlights the loss plots and the ground truth (on left) and output (on right) below.
+![Alt text](sample_img.png?raw=true "Title")
 ## References
-This implementation was referred from the original code released by authors here [Project page](https://bsp-net.github.io)
+This implementation was referred from the original TensorFlow 2D code released by authors here [Project page](https://bsp-net.github.io)
 
