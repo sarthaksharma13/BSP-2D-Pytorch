@@ -1,2 +1,3 @@
 data/*.hdf5
 exp/*/*
+__pycache__
